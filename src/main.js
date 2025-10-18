@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
+import router from './router'
 
 // PrimeVue imports
 import PrimeVue from 'primevue/config'
@@ -17,5 +18,7 @@ app.use(PrimeVue, {
     }
   }
 })
+
+app.use(router)
 
 app.mount('#app')
