@@ -41,91 +41,39 @@ const filteredComponents = computed(() => {
 })
 
 /**
- * Organize components into columns based on their metadata
+ * Organize components into a flat array with span information
  * Components can specify column span (1, 2, or 3 columns)
  */
-const organizedColumns = computed(() => {
-  const columns = { left: [], center: [], right: [] }
-  let currentColumn = 'left'
+const organizedComponents = computed(() => {
+  const components = []
   
   filteredComponents.value.forEach(comp => {
     const metadata = comp.metadata
     const columnSpan = metadata.columnSpan || 1
     
-    if (columnSpan === 3) {
-      // Full width components go to all columns
-      columns.left.push({ ...comp, fullWidth: true })
-    } else if (columnSpan === 2) {
-      // Two column components
-      if (currentColumn === 'left') {
-        columns.left.push({ ...comp, twoColumn: true })
-        currentColumn = 'right'
-      } else {
-        columns.center.push({ ...comp, twoColumn: true })
-        currentColumn = 'left'
-      }
-    } else {
-      // Single column components - distribute evenly
-      if (currentColumn === 'left') {
-        columns.left.push(comp)
-        currentColumn = 'center'
-      } else if (currentColumn === 'center') {
-        columns.center.push(comp)
-        currentColumn = 'right'
-      } else {
-        columns.right.push(comp)
-        currentColumn = 'left'
-      }
-    }
+    components.push({
+      ...comp,
+      span: columnSpan
+    })
   })
   
-  return columns
+  return components
 })
 </script>
 
 <template>
   <div class="three-column-layout">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <!-- Left Column -->
-      <div class="space-y-4">
-        <div
-          v-for="(comp, index) in organizedColumns.left"
-          :key="`left-${index}`"
-          :class="{
-            'lg:col-span-3': comp.fullWidth,
-            'lg:col-span-2': comp.twoColumn
-          }"
-        >
-          <component :is="comp.component" v-bind="comp.props || {}" />
-        </div>
-      </div>
-
-      <!-- Center Column -->
-      <div class="space-y-4">
-        <div
-          v-for="(comp, index) in organizedColumns.center"
-          :key="`center-${index}`"
-          :class="{
-            'lg:col-span-3': comp.fullWidth,
-            'lg:col-span-2': comp.twoColumn
-          }"
-        >
-          <component :is="comp.component" v-bind="comp.props || {}" />
-        </div>
-      </div>
-
-      <!-- Right Column -->
-      <div class="space-y-4">
-        <div
-          v-for="(comp, index) in organizedColumns.right"
-          :key="`right-${index}`"
-          :class="{
-            'lg:col-span-3': comp.fullWidth,
-            'lg:col-span-2': comp.twoColumn
-          }"
-        >
-          <component :is="comp.component" v-bind="comp.props || {}" />
-        </div>
+      <div
+        v-for="(comp, index) in organizedComponents"
+        :key="`comp-${index}`"
+        :class="{
+          'lg:col-span-1': comp.span === 1,
+          'lg:col-span-2': comp.span === 2,
+          'lg:col-span-3': comp.span === 3
+        }"
+      >
+        <component :is="comp.component" v-bind="comp.props || {}" />
       </div>
     </div>
   </div>
