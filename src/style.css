@@ -1,6 +1,20 @@
 @import "tailwindcss";
 
+:root {
+  --p-primary-color: #2563eb; /* Tailwind's blue-600 */
+  --p-secondary-color: #6b7280; /* Tailwind's gray-500 */
+  --p-accent-color: #10b981; /* Tailwind's green-500 */
+  --p-background-color: #f9fafb; /* Tailwind's gray-50 */
+  --p-text-color: #111827; /* Tailwind's gray-900 */
+  --athena-component-bg-color: #323241;
+}
+
 body {
   margin: 0;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.p-card {
+  height: 100%;
+  background-color: var(--athena-component-bg-color) !important;
 }
