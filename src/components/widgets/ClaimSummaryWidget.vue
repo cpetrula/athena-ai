@@ -68,7 +68,7 @@ export const metadata = {
   description: 'Displays a summary of claim information including claimant details, injury date, and claim status',
   roles: ['claims_adjuster', 'manager', 'all'],
   contexts: ['claim', 'dashboard'],
-  columnSpan: 1,
+  columnSpan: 2,
   priority: 10
 }
 </script>

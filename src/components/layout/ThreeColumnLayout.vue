@@ -44,37 +44,61 @@ const filteredComponents = computed(() => {
  * Organize components into a flat array with span information
  * Components can specify column span (1, 2, or 3 columns)
  */
-const organizedComponents = computed(() => {
-  const components = []
-  
+ const organizedComponents = computed(() => {
+  const rows = [];
+  let currentRow = [];
+  let remainingSpan = 3;
+
   filteredComponents.value.forEach(comp => {
-    const metadata = comp.metadata
-    const columnSpan = metadata.columnSpan || 1
-    
-    components.push({
-      ...comp,
-      span: columnSpan
-    })
-  })
-  
-  return components
-})
+    const metadata = comp.metadata;
+    const columnSpan = metadata.columnSpan || 1;
+
+    if (columnSpan > remainingSpan) {
+      // Start a new row if the current component doesn't fit
+      rows.push(currentRow);
+      currentRow = [];
+      remainingSpan = 3;
+    }
+
+    currentRow.push({ ...comp, span: columnSpan });
+    remainingSpan -= columnSpan;
+
+    if (remainingSpan === 0) {
+      // Push the row if it's full
+      rows.push(currentRow);
+      currentRow = [];
+      remainingSpan = 3;
+    }
+  });
+
+  // Push the last row if it has any components
+  if (currentRow.length > 0) {
+    rows.push(currentRow);
+  }
+
+  console.log('Organized Components:', rows);
+
+  return rows;
+});
 </script>
 
 <template>
   <div class="three-column-layout">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <div
-        v-for="(comp, index) in organizedComponents"
-        :key="`comp-${index}`"
-        :class="{
-          'lg:col-span-1': comp.span === 1,
-          'lg:col-span-2': comp.span === 2,
-          'lg:col-span-3': comp.span === 3
-        }"
-      >
-        <component :is="comp.component" v-bind="comp.props || {}" />
-      </div>
+      <template v-for="(row, rowIndex) in organizedComponents" :key="`row-${rowIndex}`">
+        <div
+          v-for="(comp, index) in row"
+          :key="`comp-${rowIndex}-${index}`"
+          :class="{
+            'lg:col-span-1': comp.span === 1,
+            'lg:col-span-2': comp.span === 2,
+            'lg:col-span-3': comp.span === 3
+          }"
+        >
+          <!-- Render component content here -->
+          <component :is="comp.component" v-bind="comp.props" />
+        </div>
+      </template>
     </div>
   </div>
 </template>

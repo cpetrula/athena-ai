@@ -5,12 +5,14 @@ import ClaimSummaryWidget from '../components/widgets/ClaimSummaryWidget.vue'
 import AIInsightsWidget from '../components/widgets/AIInsightsWidget.vue'
 import NotificationsWidget from '../components/widgets/NotificationsWidget.vue'
 import PolicyListWidget from '../components/widgets/PolicyListWidget.vue'
+import OpenAIChat from '../components/widgets/OpenAIChat.vue'
 
 // Import metadata from widgets
 import { metadata as claimSummaryMeta } from '../components/widgets/ClaimSummaryWidget.vue'
 import { metadata as aiInsightsMeta } from '../components/widgets/AIInsightsWidget.vue'
 import { metadata as notificationsMeta } from '../components/widgets/NotificationsWidget.vue'
 import { metadata as policyListMeta } from '../components/widgets/PolicyListWidget.vue'
+import { metadata as openAIChatMeta } from '../components/widgets/OpenAIChat.vue'
 
 // Current user role (in real app, this would come from auth service)
 const userRole = ref('claims_adjuster')
@@ -37,17 +39,19 @@ const components = ref([
     component: markRaw(PolicyListWidget),
     metadata: policyListMeta,
     props: {}
+  },
+  {
+    component: markRaw(OpenAIChat),
+    metadata: openAIChatMeta,
+    props: {}
   }
+
 ])
 </script>
 
 <template>
   <div class="container mx-auto px-4 py-6">
-    <div class="mb-6">
-      <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-      <p class="text-gray-600 mt-2">Welcome back! Here's an overview of your workspace.</p>
-    </div>
-    
+     
     <ThreeColumnLayout
       :components="components"
       :user-role="userRole"

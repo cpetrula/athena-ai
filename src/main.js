@@ -22,3 +22,4 @@ app.use(PrimeVue, {
 app.use(router)
 
 app.mount('#app')
+document.documentElement.classList.add('dark-mode');
