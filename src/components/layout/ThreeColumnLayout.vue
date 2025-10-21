@@ -41,45 +41,94 @@ const filteredComponents = computed(() => {
 })
 
 /**
- * Organize components into a flat array with span information
- * Components can specify column span (1, 2, or 3 columns)
+ * Organize components into rows with optimal column filling
+ * Uses a bin-packing approach to minimize wasted space while respecting priority
  */
- const organizedComponents = computed(() => {
-  const rows = [];
-  let currentRow = [];
-  let remainingSpan = 3;
+const organizedComponents = computed(() => {
+  // Create a copy of components with their spans
+  const components = filteredComponents.value.map(comp => ({
+    ...comp,
+    span: comp.metadata.columnSpan || 1,
+    priority: comp.metadata.priority || 0
+  }))
 
-  filteredComponents.value.forEach(comp => {
-    const metadata = comp.metadata;
-    const columnSpan = metadata.columnSpan || 1;
+  // Sort by priority (higher first)
+  const sortedComponents = [...components].sort((a, b) => {
+    return b.priority - a.priority
+  })
 
-    if (columnSpan > remainingSpan) {
-      // Start a new row if the current component doesn't fit
-      rows.push(currentRow);
-      currentRow = [];
-      remainingSpan = 3;
+  const rows = []
+  const used = new Set()
+
+  // Helper to find components that fit in remaining space
+  const findComponentsToFill = (startIdx, remainingSpan, usedSet) => {
+    const rowIndices = [startIdx]
+    let currentRemaining = remainingSpan - sortedComponents[startIdx].span
+    const rowUsed = new Set([...usedSet, startIdx])
+
+    while (currentRemaining > 0) {
+      let bestIdx = -1
+      let bestPriority = -1
+
+      // Find highest priority component that fits
+      for (let i = 0; i < sortedComponents.length; i++) {
+        if (rowUsed.has(i)) continue
+        const comp = sortedComponents[i]
+        
+        if (comp.span <= currentRemaining && comp.priority > bestPriority) {
+          bestIdx = i
+          bestPriority = comp.priority
+        }
+      }
+
+      if (bestIdx !== -1) {
+        rowIndices.push(bestIdx)
+        rowUsed.add(bestIdx)
+        currentRemaining -= sortedComponents[bestIdx].span
+      } else {
+        break
+      }
     }
 
-    currentRow.push({ ...comp, span: columnSpan });
-    remainingSpan -= columnSpan;
-
-    if (remainingSpan === 0) {
-      // Push the row if it's full
-      rows.push(currentRow);
-      currentRow = [];
-      remainingSpan = 3;
-    }
-  });
-
-  // Push the last row if it has any components
-  if (currentRow.length > 0) {
-    rows.push(currentRow);
+    return { indices: rowIndices, waste: currentRemaining }
   }
 
-  console.log('Organized Components:', rows);
+  // Pack components into rows
+  while (used.size < sortedComponents.length) {
+    let bestConfiguration = null
+    let bestWaste = 4
 
-  return rows;
-});
+    // Try each unused component as a starting point
+    for (let i = 0; i < sortedComponents.length; i++) {
+      if (used.has(i)) continue
+
+      const config = findComponentsToFill(i, 3, used)
+      
+      // Prefer configuration with less waste
+      // If same waste, prefer one that starts with higher priority
+      if (config.waste < bestWaste ||
+          (config.waste === bestWaste && sortedComponents[i].priority > sortedComponents[bestConfiguration.indices[0]].priority)) {
+        bestConfiguration = config
+        bestWaste = config.waste
+      }
+
+      // Perfect fit found, use it
+      if (bestWaste === 0) break
+    }
+
+    if (bestConfiguration) {
+      const currentRow = bestConfiguration.indices.map(idx => {
+        used.add(idx)
+        return sortedComponents[idx]
+      })
+      rows.push(currentRow)
+    }
+  }
+
+  console.log('Organized Components:', rows)
+
+  return rows
+})
 </script>
 
 <template>
